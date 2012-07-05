@@ -12,9 +12,14 @@ import (
 	"github.com/BurntSushi/xgb/randr"
 )
 
-var command string = "table"
-
 var (
+	command = "table"
+
+	commands = map[string]func(*config, heads){
+		"table": table,
+		"tabs": tabs,
+	}
+
 	flagHeader bool
 )
 
@@ -108,17 +113,12 @@ func main() {
 	conf := newConfig()
 	hds := newHeads(X)
 
-	var f func(*config, heads)
-	switch command {
-	case "table":
-		f = table
-	case "tabs":
-		f = tabs
-	default:
+	if f, ok := commands[command]; ok {
+		f(conf, hds)
+	} else {
 		fmt.Fprintf(os.Stderr, "Unknown command '%s'.\n", command)
 		usage()
 	}
-
-	f(conf, hds)
+	os.Exit(0)
 }
 
