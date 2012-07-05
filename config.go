@@ -10,7 +10,7 @@ import (
 
 var (
 	xdgfile = path.Join(os.Getenv("XDG_CONFIG_HOME"), "gohead", "config.ini")
-	myfile = path.Join(os.Getenv("HOME"), ".config", "gohead", "config.ini")
+	myfile  = path.Join(os.Getenv("HOME"), ".config", "gohead", "config.ini")
 )
 
 type config struct {
@@ -65,4 +65,3 @@ func (c *config) nice(output string) string {
 	}
 	return output
 }
-

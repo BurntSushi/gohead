@@ -17,7 +17,7 @@ var (
 
 	commands = map[string]func(*config, heads){
 		"table": table,
-		"tabs": tabs,
+		"tabs":  tabs,
 	}
 
 	flagHeader bool
@@ -31,12 +31,12 @@ func table(config *config, heads heads) {
 	tabw := tabwriter.NewWriter(os.Stdout, 0, 4, 4, ' ', 0)
 	if flagHeader {
 		tabw.Write([]byte(
-			"Monitor number\t"+
-			"Nice output name\t"+
-			"Output name\t"+
-			"(X, Y)\t"+
-			"WidthxHeight\t"+
-			"Is primary\n"))
+			"Monitor number\t" +
+				"Nice output name\t" +
+				"Output name\t" +
+				"(X, Y)\t" +
+				"WidthxHeight\t" +
+				"Is primary\n"))
 	}
 	for i, head := range heads.heads {
 		isPrimary := ""
@@ -59,12 +59,12 @@ func table(config *config, heads heads) {
 func tabs(config *config, heads heads) {
 	if flagHeader {
 		fmt.Print(
-			"Monitor number\t"+
-			"Nice output name\t"+
-			"Output name\t"+
-			"X\tY\t"+
-			"Width\tHeight\t"+
-			"Is primary\n")
+			"Monitor number\t" +
+				"Nice output name\t" +
+				"Output name\t" +
+				"X\tY\t" +
+				"Width\tHeight\t" +
+				"Is primary\n")
 	}
 	for i, head := range heads.heads {
 		isPrimary := ""
@@ -81,8 +81,8 @@ func init() {
 	log.SetPrefix("[gohead] ")
 
 	flag.BoolVar(&flagHeader, "header", false,
-		"If set, column headers will be shown in the 'tabs' and 'table' " +
-		"commands.")
+		"If set, column headers will be shown in the 'tabs' and 'table' "+
+			"commands.")
 	flag.Usage = usage
 	flag.Parse()
 
@@ -121,4 +121,3 @@ func main() {
 	}
 	os.Exit(0)
 }
-

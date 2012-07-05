@@ -13,7 +13,7 @@ import (
 
 type heads struct {
 	primary *head
-	heads []head
+	heads   []head
 }
 
 func newHeads(X *xgb.Conn) heads {
@@ -61,7 +61,7 @@ func newHeads(X *xgb.Conn) heads {
 
 	hdsPrim := heads{
 		primary: primaryHead,
-		heads: hds,
+		heads:   hds,
 	}
 	sort.Sort(hdsPrim)
 	return hdsPrim
@@ -90,19 +90,18 @@ func (hs heads) Swap(i, j int) {
 }
 
 type head struct {
-	id randr.Output
-	output string
+	id                  randr.Output
+	output              string
 	x, y, width, height int
 }
 
 func newHead(id randr.Output, name string, info *randr.GetCrtcInfoReply) head {
 	return head{
-		id: id,
+		id:     id,
 		output: name,
-		x: int(info.X),
-		y: int(info.Y),
-		width: int(info.Width),
+		x:      int(info.X),
+		y:      int(info.Y),
+		width:  int(info.Width),
 		height: int(info.Height),
 	}
 }
-
