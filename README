@@ -1,0 +1,8 @@
+gohead is a wrapper script around xrandr that makes managing multi-monitor 
+configurations easier.
+
+Features:
+
+* Associate unmemorable names like "LVDS-1" with "laptop".
+* Setup hooks to be run whenever the configuration is changed with gohead.
+
