@@ -17,6 +17,7 @@ var (
 	commands = map[string]func(*config, heads){
 		"table": table,
 		"tabs":  tabs,
+		"query": query,
 	}
 
 	flagConfig string
@@ -34,14 +35,14 @@ func init() {
 	flag.Usage = usage
 	flag.Parse()
 
-	if flag.NArg() == 1 {
+	if flag.NArg() >= 1 {
 		command = flag.Arg(0)
 	}
 }
 
 func usage() {
 	fmt.Fprintf(os.Stderr,
-		"Usage: %s [ table | tabs ]\n",
+		"Usage: %s [ table | tabs | query [ head-name | primary ] ]\n",
 		path.Base(os.Args[0]))
 	flag.PrintDefaults()
 	os.Exit(1)

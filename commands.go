@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"os"
 	"text/tabwriter"
@@ -58,4 +59,36 @@ func tabs(config *config, heads heads) {
 			i, config.nice(head.output), head.output,
 			head.x, head.y, head.width, head.height, isPrimary)
 	}
+}
+
+// query returns the monitor geometry for the given output name.
+// The output name can either be a nice name specified in the configuration
+// file, or the actual RandR output name. The special output name 'primary'
+// will return the geometry for the primary monitor.
+func query(config *config, heads heads) {
+	if flag.NArg() < 2 {
+		fmt.Fprintln(os.Stderr, "The 'query' command expects a head name, but "+
+			"didn't find one.")
+		usage()
+	}
+	headName := flag.Arg(1)
+	showHead := func(hd head) {
+		fmt.Printf("%s\t%d\t%d\t%d\t%d\n", config.nice(hd.output),
+			hd.x, hd.y, hd.width, hd.height)
+	}
+
+	if headName == "primary" {
+		showHead(*heads.primary)
+		return
+	}
+	for _, hd := range heads.heads {
+		if hd.output == headName || config.nice(hd.output) == headName {
+			showHead(hd)
+			return
+		}
+	}
+
+	fmt.Fprintf(os.Stderr, "The 'query' command could not find a head "+
+		"matching the name '%s'.\n", headName)
+	os.Exit(1)
 }
