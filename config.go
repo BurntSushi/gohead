@@ -23,23 +23,35 @@ type config struct {
 // looks for $HOME/.config/gohead/config.ini. If neither one can be found,
 // a default (blank) configuration is used.
 func newConfig() *config {
+	var dict ini.Dict
+	var err error
+
 	conf := &config{
 		outputs: make(map[string]string, 10),
 	}
 
-	dict, err := ini.Load(xdgfile)
-	if err != nil {
-		if os.IsNotExist(err) && xdgfile != myfile {
-			dict, err = ini.Load(myfile)
-			if err != nil {
-				log.Printf("Neither '%s' nor '%s' could be read: %s.",
-					xdgfile, myfile, err)
+	if len(flagConfig) > 0 {
+		dict, err = ini.Load(flagConfig)
+		if err != nil {
+			log.Printf("There was an error when trying to load '%s': %s.",
+				flagConfig, err)
+			return conf
+		}
+	} else {
+		dict, err = ini.Load(xdgfile)
+		if err != nil {
+			if os.IsNotExist(err) && xdgfile != myfile {
+				dict, err = ini.Load(myfile)
+				if err != nil {
+					log.Printf("Neither '%s' nor '%s' could be read: %s.",
+						xdgfile, myfile, err)
+					return conf
+				}
+			} else {
+				log.Printf("There was an error when trying to load '%s': %s.",
+					xdgfile, err)
 				return conf
 			}
-		} else {
-			log.Printf("There was an error when trying to load '%s': %s.",
-				xdgfile, err)
-			return conf
 		}
 	}
 
