@@ -79,6 +79,36 @@ func newHeads(X *xgb.Conn) heads {
 	return hdsPrim
 }
 
+func (hs heads) findActive(config *config, queryName string) *head {
+	if queryName == "primary" {
+		return hs.primary
+	}
+	for _, hd := range hs.heads {
+		if hd.output == queryName || config.nice(hd.output) == queryName {
+			return &hd
+		}
+	}
+	return nil
+}
+
+func (hs heads) findOff(config *config, queryName string) string {
+	for _, output := range hs.off {
+		if output == queryName || config.nice(output) == queryName {
+			return output
+		}
+	}
+	return ""
+}
+
+func (hs heads) findDisconnected(config *config, queryName string) string {
+	for _, output := range hs.disconnected {
+		if output == queryName || config.nice(output) == queryName {
+			return output
+		}
+	}
+	return ""
+}
+
 func (hs heads) String() string {
 	lines := make([]string, len(hs.heads))
 	for i, head := range hs.heads {

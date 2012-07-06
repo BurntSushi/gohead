@@ -12,9 +12,9 @@ import (
 // to set them up.
 func set(config *config, heads heads) {
 	if flag.NArg() < 2 {
-		fmt.Fprintln(os.Stderr, "The 'set' command expects at least one "+
-			"head name, but didn't find any.")
-		usage()
+		fmt.Fprint(os.Stderr, "The 'set' command expects at least one "+
+			"head name, but didn't find any.\n\n")
+		flag.Usage()
 	}
 }
 
@@ -85,25 +85,19 @@ func list(config *config, heads heads) {
 // will return the geometry for the primary monitor.
 func query(config *config, heads heads) {
 	if flag.NArg() < 2 {
-		fmt.Fprintln(os.Stderr, "The 'query' command expects a head name, but "+
-			"didn't find one.")
-		usage()
-	}
-	headName := flag.Arg(1)
-	showHead := func(hd head) {
-		fmt.Printf("%s\t%d\t%d\t%d\t%d\n", config.nice(hd.output),
-			hd.x, hd.y, hd.width, hd.height)
+		fmt.Fprint(os.Stderr, "The 'query' command expects a head name, but "+
+			"didn't find one.\n\n")
+		flag.Usage()
 	}
 
-	if headName == "primary" {
-		showHead(*heads.primary)
+	headName := flag.Arg(1)
+	if found := heads.findActive(config, headName); found != nil {
+		fmt.Printf("%s\t%d\t%d\t%d\t%d\n", config.nice(found.output),
+			found.x, found.y, found.width, found.height)
 		return
 	}
-	for _, hd := range heads.heads {
-		if hd.output == headName || config.nice(hd.output) == headName {
-			showHead(hd)
-			return
-		}
+	if found := heads.findOff(config, headName); len(found) > 0 {
+		fmt.Printf("%s disabled\n", config.nice(found))
 	}
 
 	fmt.Fprintf(os.Stderr, "The 'query' command could not find a head "+
