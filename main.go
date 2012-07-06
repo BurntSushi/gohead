@@ -12,12 +12,16 @@ import (
 )
 
 var (
-	command = "table"
+	command = "set"
 
 	commands = map[string]func(*config, heads){
-		"table": table,
-		"tabs":  tabs,
-		"query": query,
+		"set":       set,
+		"table":     table,
+		"tabs":      tabs,
+		"list":      list,
+		"query":     query,
+		"connected": connected,
+		"all":       all,
 	}
 
 	flagConfig string
@@ -42,7 +46,8 @@ func init() {
 
 func usage() {
 	fmt.Fprintf(os.Stderr,
-		"Usage: %s [ table | tabs | query [ head-name | primary ] ]\n",
+		"Usage: %s [ set head-name [ head-name ... ] | table | tabs | list "+
+			"| query [ head-name | primary ] ]\n",
 		path.Base(os.Args[0]))
 	flag.PrintDefaults()
 	os.Exit(1)

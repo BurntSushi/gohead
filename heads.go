@@ -12,8 +12,10 @@ import (
 )
 
 type heads struct {
-	primary *head
-	heads   []head
+	primary      *head
+	heads        []head
+	off          []string
+	disconnected []string
 }
 
 func newHeads(X *xgb.Conn) heads {
@@ -32,16 +34,24 @@ func newHeads(X *xgb.Conn) heads {
 	}
 
 	hds := make([]head, 0, len(resources.Outputs))
+	off := make([]string, 0)
+	disconnected := make([]string, 0)
 	for i, output := range resources.Outputs {
 		oinfo, err := randr.GetOutputInfo(X, output, 0).Reply()
 		if err != nil {
 			log.Fatalf("Could not get output info for screen %d: %s.", i, err)
 		}
+		outputName := string(oinfo.Name)
+
 		if oinfo.Connection != randr.ConnectionConnected {
+			disconnected = append(disconnected, outputName)
+			continue
+		}
+		if oinfo.Crtc == 0 {
+			off = append(off, outputName)
 			continue
 		}
 
-		outputName := string(oinfo.Name)
 		crtcinfo, err := randr.GetCrtcInfo(X, oinfo.Crtc, 0).Reply()
 		if err != nil {
 			log.Fatalf("Could not get crtc info for screen (%d, %s): %s.",
@@ -60,8 +70,10 @@ func newHeads(X *xgb.Conn) heads {
 	}
 
 	hdsPrim := heads{
-		primary: primaryHead,
-		heads:   hds,
+		primary:      primaryHead,
+		heads:        hds,
+		off:          off,
+		disconnected: disconnected,
 	}
 	sort.Sort(hdsPrim)
 	return hdsPrim
