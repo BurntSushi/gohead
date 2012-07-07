@@ -79,14 +79,11 @@ func newHeads(X *xgb.Conn) heads {
 	return hdsPrim
 }
 
-func (hs heads) randrName(config *config, queryName string) string {
+func (hs heads) connectedRandrName(config *config, queryName string) string {
 	if hd := hs.findActive(config, queryName); hd != nil {
 		return hd.output
 	}
 	if hdName := hs.findOff(config, queryName); len(hdName) > 0 {
-		return hdName
-	}
-	if hdName := hs.findDisconnected(config, queryName); len(hdName) > 0 {
 		return hdName
 	}
 	return ""

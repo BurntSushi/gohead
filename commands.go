@@ -24,10 +24,10 @@ func set(config *config, heads heads) {
 			os.Exit(1)
 		}
 
-		xname := heads.randrName(config, headName)
+		xname := heads.connectedRandrName(config, headName)
 		if len(xname) == 0 {
 			fmt.Fprintf(os.Stderr, "The head name '%s' does not "+
-				"refer to a valid head.\n", headName)
+				"refer to a connected monitor.\n", headName)
 			os.Exit(1)
 		}
 		if icontains(xname, toenable) {
