@@ -16,6 +16,32 @@ func set(config *config, heads heads) {
 			"head name, but didn't find any.\n\n")
 		flag.Usage()
 	}
+	toenable := make([]string, flag.NArg()-1)
+	for i, headName := range flag.Args()[1:] {
+		if headName == "primary" {
+			fmt.Fprintf(os.Stderr, "The 'set' command requires specific "+
+				"head names, which does not include 'primary'.\n")
+			os.Exit(1)
+		}
+
+		xname := heads.randrName(config, headName)
+		if len(xname) == 0 {
+			fmt.Fprintf(os.Stderr, "The head name '%s' does not "+
+				"refer to a valid head.\n", headName)
+			os.Exit(1)
+		}
+		if icontains(xname, toenable) {
+			fmt.Fprintf(os.Stderr, "The head name '%s' (nice: '%s') "+
+				"was specified twice, which is not allowed.\n",
+				xname, config.nice(xname))
+			os.Exit(1)
+		}
+		toenable[i] = xname
+	}
+	if len(toenable) == 0 {
+		panic("unreachable")
+	}
+	fmt.Println(toenable)
 }
 
 // table runs the 'table' command. The 'table' command outputs a visually
