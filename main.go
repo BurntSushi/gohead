@@ -30,18 +30,27 @@ var (
 		"all":       {all, "all"},
 	}
 
-	flagConfig string
-	flagHeader bool
+	flagBaseline string
+	flagConfig   string
+	flagHeader   bool
+	flagVertical bool
 )
 
 func init() {
 	log.SetPrefix("[gohead] ")
 
+	flag.StringVar(&flagBaseline, "baseline", "",
+		"When set to a monitor name with the 'set' command, the specified "+
+			"monitor will become the 'baseline'. i.e., have a 'y' position of "+
+			"0 in a horizontal layout and an 'x' position of 0 in a "+
+			"vertical layout.")
 	flag.StringVar(&flagConfig, "config", "",
 		"Override the default location of the config file.")
 	flag.BoolVar(&flagHeader, "header", false,
 		"If set, column headers will be shown in the 'tabs' and 'table' "+
 			"commands.")
+	flag.BoolVar(&flagVertical, "vertical", false,
+		"If set, monitors will be aligned vertically instead of horizontally.")
 	flag.Usage = usage(commands)
 	flag.Parse()
 

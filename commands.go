@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"sort"
+	"strings"
 	"text/tabwriter"
 )
 
@@ -41,7 +42,31 @@ func set(config *config, heads heads) {
 	if len(toenable) == 0 {
 		panic("unreachable")
 	}
-	fmt.Println(toenable)
+	fmt.Println(xrandr(toenable, flagVertical, flagBaseline))
+}
+
+func xrandr(headNames []string, vertical bool, baseline string) string {
+	if len(baseline) > 0 && !icontains(baseline, headNames) {
+		fmt.Fprintf(os.Stderr, "The baseline monitor specified, '%s', is "+
+			"not in the list of monitors to enable.", baseline)
+		os.Exit(1)
+	}
+	outputs := make([]string, len(headNames))
+	first := true
+	for i, name := range headNames {
+		switch {
+		case first:
+			outputs[i] = fmt.Sprintf("--output %s --auto", name)
+			first = false
+		case vertical:
+			outputs[i] = fmt.Sprintf("--output %s --auto --below %s",
+				name, headNames[i-1])
+		default:
+			outputs[i] = fmt.Sprintf("--output %s --auto --right-of %s",
+				name, headNames[i-1])
+		}
+	}
+	return fmt.Sprintf("xrandr %s", strings.Join(outputs, " "))
 }
 
 // table runs the 'table' command. The 'table' command outputs a visually
