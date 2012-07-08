@@ -42,15 +42,10 @@ func set(config *config, heads heads) {
 	if len(toenable) == 0 {
 		panic("unreachable")
 	}
-	fmt.Println(xrandr(toenable, flagVertical, flagBaseline))
+	fmt.Println(xrandr(toenable, flagVertical))
 }
 
-func xrandr(headNames []string, vertical bool, baseline string) string {
-	if len(baseline) > 0 && !icontains(baseline, headNames) {
-		fmt.Fprintf(os.Stderr, "The baseline monitor specified, '%s', is "+
-			"not in the list of monitors to enable.", baseline)
-		os.Exit(1)
-	}
+func xrandr(headNames []string, vertical bool) string {
 	outputs := make([]string, len(headNames))
 	first := true
 	for i, name := range headNames {
