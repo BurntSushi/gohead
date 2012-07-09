@@ -18,10 +18,11 @@ type commandInfo struct {
 }
 
 var (
-	command = "set"
+	command = "table"
 
 	commands = map[string]commandInfo{
 		"set":       {set, "set HEAD-NAME [ HEAD-NAME ... ]"},
+		"primary":   {primary, "primary HEAD-NAME"},
 		"table":     {table, "table"},
 		"tabs":      {tabs, "tabs"},
 		"list":      {list, "list"},
@@ -33,6 +34,7 @@ var (
 	flagBaseline string
 	flagConfig   string
 	flagHeader   bool
+	flagTest     bool
 	flagVertical bool
 )
 
@@ -44,6 +46,8 @@ func init() {
 	flag.BoolVar(&flagHeader, "header", false,
 		"If set, column headers will be shown in the 'tabs' and 'table' "+
 			"commands.")
+	flag.BoolVar(&flagTest, "test", false,
+		"If set, commands will be echoed but not executed.")
 	flag.BoolVar(&flagVertical, "vertical", false,
 		"If set, monitors will be aligned vertically instead of horizontally.")
 	flag.Usage = usage(commands)
@@ -58,7 +62,7 @@ func usage(commands map[string]commandInfo) func() {
 	return func() {
 		fmt.Fprintf(os.Stderr, "Usage: %s [ flags ] [ command ]\n",
 			path.Base(os.Args[0]))
-		fmt.Fprint(os.Stderr, "Where 'command' (default: 'set') is one of:\n")
+		fmt.Fprint(os.Stderr, "Where 'command' (default: 'table') is one of:\n")
 		printCommands(commands)
 		flag.PrintDefaults()
 		os.Exit(1)

@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"os/exec"
 	"sort"
 	"strings"
 	"text/tabwriter"
@@ -42,26 +43,74 @@ func set(config *config, heads heads) {
 	if len(toenable) == 0 {
 		panic("unreachable")
 	}
-	fmt.Println(xrandr(toenable, flagVertical))
+	args := xrandrArgs(toenable, flagVertical)
+	fmt.Printf("xrandr %s\n", strings.Join(args, " "))
+
+	if flagTest {
+		return
+	}
+
+	cmd := exec.Command("xrandr", args...)
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		fmt.Println(string(out))
+		fmt.Println(err)
+		os.Exit(1)
+	} else {
+		fmt.Print(string(out))
+	}
 }
 
-func xrandr(headNames []string, vertical bool) string {
-	outputs := make([]string, len(headNames))
+func xrandrArgs(headNames []string, vertical bool) []string {
+	args := make([]string, 0, len(headNames)*5)
 	first := true
 	for i, name := range headNames {
 		switch {
 		case first:
-			outputs[i] = fmt.Sprintf("--output %s --auto", name)
+			args = append(args, "--output", name, "--auto")
 			first = false
 		case vertical:
-			outputs[i] = fmt.Sprintf("--output %s --auto --below %s",
-				name, headNames[i-1])
+			args = append(args, "--output", name, "--auto",
+				"--below", headNames[i-1])
 		default:
-			outputs[i] = fmt.Sprintf("--output %s --auto --right-of %s",
-				name, headNames[i-1])
+			args = append(args, "--output", name, "--auto",
+				"--right-of", headNames[i-1])
 		}
 	}
-	return fmt.Sprintf("xrandr %s", strings.Join(outputs, " "))
+	return args
+}
+
+// primary sets the specified *connected* head to be the primary monitor.
+func primary(config *config, heads heads) {
+	if flag.NArg() != 2 {
+		fmt.Fprintf(os.Stderr, "The 'primary' command expects one "+
+			"head name, but found %d head names.\n\n", flag.NArg()-1)
+		flag.Usage()
+	}
+
+	xname := heads.connectedRandrName(config, flag.Arg(1))
+	if len(xname) == 0 {
+		fmt.Fprintf(os.Stderr, "The head name '%s' does not "+
+			"refer to a connected monitor.\n", flag.Arg(1))
+		os.Exit(1)
+	}
+
+	args := []string{"--output", xname, "--primary"}
+	fmt.Println("xrandr", strings.Join(args, " "))
+
+	if flagTest {
+		return
+	}
+
+	cmd := exec.Command("xrandr", args...)
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		fmt.Println(string(out))
+		fmt.Println(err)
+		os.Exit(1)
+	} else {
+		fmt.Print(string(out))
+	}
 }
 
 // table runs the 'table' command. The 'table' command outputs a visually
