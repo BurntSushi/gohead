@@ -19,6 +19,7 @@ func set(config *config, heads heads) {
 		flag.Usage()
 	}
 	toenable := make([]string, flag.NArg()-1)
+	todisable := make([]string, 0)
 	for i, headName := range flag.Args()[1:] {
 		if headName == "primary" {
 			fmt.Fprintf(os.Stderr, "The 'set' command requires specific "+
@@ -40,10 +41,15 @@ func set(config *config, heads heads) {
 		}
 		toenable[i] = xname
 	}
+	for _, head := range heads.heads {
+		if !icontains(head.output, toenable) {
+			todisable = append(todisable, head.output)
+		}
+	}
 	if len(toenable) == 0 {
 		panic("unreachable")
 	}
-	args := xrandrArgs(toenable, flagVertical)
+	args := xrandrArgs(toenable, todisable, flagVertical)
 	fmt.Printf("xrandr %s\n", strings.Join(args, " "))
 
 	if flagTest {
@@ -61,21 +67,24 @@ func set(config *config, heads heads) {
 	}
 }
 
-func xrandrArgs(headNames []string, vertical bool) []string {
-	args := make([]string, 0, len(headNames)*5)
+func xrandrArgs(toenable, todisable []string, vertical bool) []string {
+	args := make([]string, 0, len(toenable)*5)
 	first := true
-	for i, name := range headNames {
+	for i, name := range toenable {
 		switch {
 		case first:
 			args = append(args, "--output", name, "--auto")
 			first = false
 		case vertical:
 			args = append(args, "--output", name, "--auto",
-				"--below", headNames[i-1])
+				"--below", toenable[i-1])
 		default:
 			args = append(args, "--output", name, "--auto",
-				"--right-of", headNames[i-1])
+				"--right-of", toenable[i-1])
 		}
+	}
+	for _, name := range todisable {
+		args = append(args, "--output", name, "--off")
 	}
 	return args
 }
