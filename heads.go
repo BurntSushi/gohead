@@ -64,7 +64,7 @@ func newHeads(X *xgb.Conn) heads {
 		}
 		hds = append(hds, head)
 	}
-	if primaryHead == nil {
+	if primaryHead == nil && len(hds) > 0 {
 		tmp := hds[0]
 		primaryHead = &tmp
 	}

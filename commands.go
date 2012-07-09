@@ -18,8 +18,12 @@ func set(config *config, heads heads) {
 			"head name, but didn't find any.\n\n")
 		flag.Usage()
 	}
+
+	// For each head name specified on the command line, verify that it is:
+	// 1) Not 'primary'.
+	// 2) A valid head name that is connected.
+	// 3) Not specified more than once.
 	toenable := make([]string, flag.NArg()-1)
-	todisable := make([]string, 0)
 	for i, headName := range flag.Args()[1:] {
 		if headName == "primary" {
 			fmt.Fprintf(os.Stderr, "The 'set' command requires specific "+
@@ -41,14 +45,32 @@ func set(config *config, heads heads) {
 		}
 		toenable[i] = xname
 	}
+	if len(toenable) == 0 {
+		panic("unreachable")
+	}
+
+	// Now gobble up ALL of the heads that *aren't* in toenable. This includes
+	// heads that are disconnected! The reason is that a head can be
+	// disconnected but still "enabled" in xrandr's eyes, leading to interesting
+	// and undesirable states.
+	todisable := make([]string, 0)
 	for _, head := range heads.heads {
 		if !icontains(head.output, toenable) {
 			todisable = append(todisable, head.output)
 		}
 	}
-	if len(toenable) == 0 {
-		panic("unreachable")
+	for _, name := range heads.off {
+		if !icontains(name, toenable) {
+			todisable = append(todisable, name)
+		}
 	}
+	for _, name := range heads.disconnected {
+		if !icontains(name, toenable) {
+			todisable = append(todisable, name)
+		}
+	}
+
+	// Construct the xrandr command, print it, then execute it. Echo its output.
 	args := xrandrArgs(toenable, todisable, flagVertical)
 	fmt.Printf("xrandr %s\n", strings.Join(args, " "))
 
