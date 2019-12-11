@@ -71,7 +71,7 @@ func set(config *config, heads heads) {
 	}
 
 	// Construct the xrandr command, print it, then execute it. Echo its output.
-	args := xrandrArgs(toenable, todisable, flagVertical)
+	args := xrandrArgs(config, toenable, todisable, flagVertical)
 	fmt.Printf("xrandr %s\n", strings.Join(args, " "))
 
 	if flagTest {
@@ -89,24 +89,33 @@ func set(config *config, heads heads) {
 	}
 }
 
-func xrandrArgs(toenable, todisable []string, vertical bool) []string {
+func xrandrArgs(config *config, toenable, todisable []string, vertical bool) []string {
 	args := make([]string, 0, len(toenable)*5)
 	first := true
 	for i, name := range toenable {
+		args = append(args, headArgs(config, name)...)
 		switch {
 		case first:
-			args = append(args, "--output", name, "--auto")
 			first = false
 		case vertical:
-			args = append(args, "--output", name, "--auto",
-				"--below", toenable[i-1])
+			args = append(args, "--below", toenable[i-1])
 		default:
-			args = append(args, "--output", name, "--auto",
-				"--right-of", toenable[i-1])
+			args = append(args, "--right-of", toenable[i-1])
 		}
 	}
 	for _, name := range todisable {
 		args = append(args, "--output", name, "--off")
+	}
+	return args
+}
+
+func headArgs(config *config, outputName string) []string {
+	args := []string{"--output", outputName}
+	hconfig := config.headConfigs[config.nice(outputName)]
+	if len(hconfig.mode) > 0 {
+		args = append(args, "--mode", hconfig.mode)
+	} else {
+		args = append(args, "--auto")
 	}
 	return args
 }

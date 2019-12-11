@@ -17,6 +17,14 @@ type config struct {
 	// outputs is a map from output names (i.e., "LVDS1") to nice names
 	// specified in a config file (i.e., "laptop").
 	outputs map[string]string
+	// A map from nice name (e.g., "laptop") to particular settings for
+	// that head.
+	headConfigs map[string]headConfig
+}
+
+type headConfig struct {
+	// An RandR mode for this head.
+	mode string
 }
 
 // newConfig checks for a ini file in XDG_CONFIG_HOME/gohead/config.ini, then
@@ -27,7 +35,8 @@ func newConfig() *config {
 	var err error
 
 	conf := &config{
-		outputs: make(map[string]string, 10),
+		outputs:     make(map[string]string),
+		headConfigs: make(map[string]headConfig),
 	}
 
 	if len(flagConfig) > 0 {
@@ -65,7 +74,22 @@ func newConfig() *config {
 			}
 		case "":
 		default:
-			log.Printf("I don't know what to do with section '%s'.", section)
+			hconfig := headConfig{}
+			for key := range dict[section] {
+				switch key {
+				case "mode":
+					if mode, ok := dict.GetString(section, key); ok {
+						hconfig.mode = mode
+					}
+				default:
+					log.Printf(
+						"unknown head config key '%s.%s'",
+						section,
+						key,
+					)
+				}
+			}
+			conf.headConfigs[section] = hconfig
 		}
 	}
 	return conf
